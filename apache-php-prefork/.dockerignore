@@ -1,0 +1,4 @@
+app/.env
+app/var
+app/vendor
+app/tests

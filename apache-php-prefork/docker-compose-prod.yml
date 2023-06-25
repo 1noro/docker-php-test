@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  web:
+    build:
+      target: prod
+    user: "1000140000:0"
+    env_file:
+      - docker/prod/.env
