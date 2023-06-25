@@ -53,6 +53,7 @@ RUN a2enmod rewrite headers && \
 #     CMD curl -f http://localhost/ || exit 1
 
 ENTRYPOINT [ "/inoro/common/entrypoint.sh" ]
+CMD [ "apache2-foreground" ]
 
 ### PROD #######################################################################
 FROM common AS prod

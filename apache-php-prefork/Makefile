@@ -1,16 +1,27 @@
+
+SHELL := /bin/bash
+
+dev-init := export UID=$(shell id -u) && export GID=$(shell id -g) && export USER=$(shell whoami)
+
 all: help
 
 up-dev: ## Start the containers in development mode
-	@docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d --build
+	export COMPOSE_PROJECT_NAME=$${context=dev} && \
+	$(dev-init) && \
+	docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d --build
 
 up-prod: ## Start the containers in production mode
-	@docker-compose -f docker-compose.yml -f docker-compose-prod.yml up -d --build
+	export COMPOSE_PROJECT_NAME=$${context=prod} && \
+	docker-compose -f docker-compose.yml -f docker-compose-prod.yml up -d --build
 
 down-dev: ## Stop the containers in development mode
-	@docker-compose -f docker-compose.yml -f docker-compose-dev.yml down
+	export COMPOSE_PROJECT_NAME=$${context=dev} && \
+	$(dev-init) && \
+	docker-compose -f docker-compose.yml -f docker-compose-dev.yml down
 
 down-prod: ## Stop the containers in production mode
-	@docker-compose -f docker-compose.yml -f docker-compose-prod.yml down
+	export COMPOSE_PROJECT_NAME=$${context=prod} && \
+	docker-compose -f docker-compose.yml -f docker-compose-prod.yml down
 
 help: ## Show this help
 	@echo "Usage: make [target]"

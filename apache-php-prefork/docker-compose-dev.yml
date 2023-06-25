@@ -4,3 +4,5 @@ services:
     build:
       target: dev
     env_file: docker/dev/.env
+    volumes:
+      - ./app:/var/www/html
