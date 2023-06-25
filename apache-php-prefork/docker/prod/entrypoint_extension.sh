@@ -1,6 +1,6 @@
 #!/bin/bash
-echo "[begin] entrypoint_extension.sh"
+echo "[begin] entrypoint_extension.sh (production)"
 
-source /1noro/common/common_entrypoint_extension.sh
+source /inoro/common/common_entrypoint_extension.sh
 
 echo "[ end ] entrypoint_extension.sh"

@@ -38,24 +38,27 @@ RUN apt update && \
 # ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 COPY --from=mlocati/php-extension-installer:2.1.30 /usr/bin/install-php-extensions /usr/local/bin/
 
+COPY docker/common/conf-available/* /etc/apache2/conf-available/
+COPY docker/common/mods-available/* /etc/apache2/mods-available/
+
 COPY [  "docker/common/entrypoint.sh", \
         "docker/common/common_entrypoint_extension.sh", \
-        "docker/common/apache.conf.template", \
+        "docker/common/apache2/sites-available/000-default.conf.template", \
         "docker/common/php.ini.template", \
-        "/1noro/common/"]
+        "/inoro/common/"]
 
-RUN chgrp -R 0 /1noro && \
-    chmod -R g=u /1noro
+RUN chgrp -R 0 /inoro && \
+    chmod -R g=u /inoro
     
-ENTRYPOINT [ "/1noro/common/entrypoint.sh" ]
+ENTRYPOINT [ "/inoro/common/entrypoint.sh" ]
 
 ### PROD #######################################################################
 FROM common AS prod
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-COPY docker/prod/entrypoint_extension.sh /1noro/entrypoint_extension.sh
+COPY docker/prod/entrypoint_extension.sh /inoro/entrypoint_extension.sh
 COPY --from=composer-builder /app /var/www/html
 
 ### DEV ########################################################################
 FROM common AS dev
-COPY docker/dev/entrypoint_extension.sh /1noro/entrypoint_extension.sh
+COPY docker/dev/entrypoint_extension.sh /inoro/entrypoint_extension.sh
 VOLUME /var/www/html
