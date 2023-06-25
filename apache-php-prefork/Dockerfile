@@ -19,7 +19,6 @@ RUN composer install \
 
 ### COMMON #####################################################################
 FROM base AS common
-ENV LANG=en_US.UTF-8
 
 RUN apt update && \
     apt install -y --no-install-recommends \
@@ -27,9 +26,16 @@ RUN apt update && \
         locales && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    locale-gen en_US.UTF-8 && \
-    dpkg-reconfigure locales
+    sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+    # localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
+    # locale-gen en_US.UTF-8 && \
+    # dpkg-reconfigure --frontend=noninteractive locales
+
+# This variables need to be setted after locale-gen
+ENV LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8
 
 # ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 COPY --from=mlocati/php-extension-installer:2.1.30 /usr/bin/install-php-extensions /usr/local/bin/
