@@ -1,5 +1,62 @@
-version: '3.7'
+version: '3.8'
 services:
+
+  # http://localhost:9090
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - apache-php-prefork-network
+    depends_on:
+      - apache-exporter
+
+  # http://localhost:9117/metrics
+  apache-exporter:
+    image: lusotycoon/apache-exporter:v1.0.0
+    ports:
+      - "9117:9117"
+    command:
+      - "--scrape_uri=http://web:8080/server-status?auto"
+      # - "--help"
+    networks:
+      - apache-php-prefork-network
+    depends_on:
+      - web
+
+  # http://localhost:3000
+  grafana:
+    image: grafana/grafana-oss:8.2.6
+    ports:
+      - "3000:3000"
+    networks:
+      - apache-php-prefork-network
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=toor
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ID=1
+      - GF_AUTH_ANONYMOUS_USER_NAME=Anonymous
+      - GF_AUTH_ANONYMOUS_USER_ID=1
+      - GF_AUTH_ANONYMOUS_USER_ORG_ROLE=Admin
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_DISABLE_SIGNOUT_MENU=true
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=false
+      - GF_AUTH_GOOGLE_ENABLED=false
+      - GF_AUTH_LDAP_ENABLED=false
+      - GF_AUTH_PROXY_ENABLED=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000/
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+
   # mysql:
   #   image: mysql:8.0.33-debian
   #   environment:
@@ -11,14 +68,27 @@ services:
   #     - "3306:3306"
   #   volumes:
   #     - ./mysql:/var/lib/mysql
+
+  # http://localhost:8080
+  # http://localhost:8080/server-status
   web:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    networks:
+      - apache-php-prefork-network
     # volumes:
     #   - ./nginx.conf:/etc/nginx/nginx.conf
     #   - ./html:/usr/share/nginx/html
     # depends_on:
     #   - mysql
+
+networks:
+  apache-php-prefork-network:
+    name: apache-php-prefork-network
+    external: false
+
+volumes:
+  grafana_data: {}
